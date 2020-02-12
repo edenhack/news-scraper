@@ -13,8 +13,6 @@ const cheerio = require ("cheerio");
 // Require models
 const db = require ("./models");
 
-const PORT = 3000;
-
 // Initialize express
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -40,9 +38,9 @@ app.get("/scrape", function (req, res){
         const $ = cheerio.load(response.data);
 //Grab Main Headline
         $("article story-1").each(function(i, element){
-            const result {};
+            const result = {};
             result.title = $(this)
-            .children("kicker-text")
+            .children("a")
             .text();
             result.link = $(this)
             .children("a")
@@ -60,7 +58,7 @@ app.get("/scrape", function (req, res){
             });
         });
         $("collection collection-spotlight").each(function(i, element){
-            const result {};
+            const result = {};
             result.title = $(this)
             .children("a")
             .text();
@@ -81,4 +79,27 @@ app.get("/scrape", function (req, res){
         });
         res.send("Scrape Complete");
     });
+});
+
+app.get("articles", function(req, res){
+    //Grab every document in the Articles Collection
+    db.ArticleHeadline.find({})
+        .then (function (dbArticleHeadline){
+            res.json(dbArticleHeadline);
+        })
+        .catch (function (err){
+            res.json(err);
+        });
+    db.Article.find({})
+        .then (function (dbArticle){
+            res.json(dbArticle);
+        })
+        .catch(function(err){
+            res.json(err);
+        });
+});
+
+//Start server
+app.listen(PORT, function () {
+    console.log("App running on port "+PORT);
 });
