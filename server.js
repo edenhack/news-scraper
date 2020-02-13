@@ -17,8 +17,8 @@ const db = require ("./models");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const index = require ("./routes/index");
-const api = require ("./routes/api");
+//const index = require ("./routes/index");
+//const api = require ("./routes/api");
 
 // Use morgan logger for logging requests
 app.use(logger("dev"));
@@ -34,45 +34,26 @@ mongoose.connect("mongodb://localhost/newsScraperHomework", {useNewUrlParser: tr
 
 // GET route for scraping the website in question
 app.get("/scrape", function (req, res){
-    axios.get("http://www.foxnews.com/").then(function(response){
+    axios.get("https://www.who.int/").then(function(response){
         const $ = cheerio.load(response.data);
+        console.log("test");
 //Grab Main Headline
-        $("article story-1").each(function(i, element){
+        $("section .PageContent").each(function(i, element){
             const result = {};
             result.title = $(this)
             .children("a")
-            .text();
+            .attr("aria-label");
             result.link = $(this)
             .children("a")
             .attr("href");
 
             // Create a new Article using the 'result' object built from scraping
-            db.ArticleHeadline.create(result)
-            .then(function(dbArticleHeadline){
-                //View the added result in console
-                console.log(dbArticleHeadline);
-            })
-            .catch(function(err){
-                //If error, log
-                console.log(err);
-            });
-        });
-        $("collection collection-spotlight").each(function(i, element){
-            const result = {};
-            result.title = $(this)
-            .children("a")
-            .text();
-            result.link = $(this)
-            .children("a")
-            .attr("href");
-
-            // Create a new article using the result
             db.Article.create(result)
             .then(function(dbArticle){
                 //View the added result in console
                 console.log(dbArticle);
             })
-            .catch (function (err){
+            .catch(function(err){
                 //If error, log
                 console.log(err);
             });
@@ -81,15 +62,8 @@ app.get("/scrape", function (req, res){
     });
 });
 
-app.get("articles", function(req, res){
+app.get("/articles", function(req, res){
     //Grab every document in the Articles Collection
-    db.ArticleHeadline.find({})
-        .then (function (dbArticleHeadline){
-            res.json(dbArticleHeadline);
-        })
-        .catch (function (err){
-            res.json(err);
-        });
     db.Article.find({})
         .then (function (dbArticle){
             res.json(dbArticle);
